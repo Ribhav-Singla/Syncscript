@@ -13,8 +13,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         const { username, password } = req.body;
         const user = await prisma.user.findFirst({ where: { username } })
         if (user) {
-            const hashedPassword = bcrypt.hashSync(password, salt);
-            if (bcrypt.compareSync(password, hashedPassword)) {
+            if (bcrypt.compareSync(password, user.password)) {
                 const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string)
                 res.status(200).json({ token })
             } else {
