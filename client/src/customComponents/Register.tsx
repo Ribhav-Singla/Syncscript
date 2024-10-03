@@ -1,11 +1,9 @@
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import Navbar from "./Navbar";
 
 function Register() {
   return (
     <>
-      <Navbar />
       <div className="p-2">
         <h1 className="font-bold text-2xl border-b-2 border-black pb-2 pt-4">
           Register
