@@ -14,6 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const socket_io_1 = require("socket.io");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
+const DEFAULT_VALUE = '';
 function intializeSocket(server) {
     const io = new socket_io_1.Server(server, {
         cors: {
@@ -30,7 +33,6 @@ function intializeSocket(server) {
             if (!response) {
                 return next(new Error("Invalid token"));
             }
-            //@ts-ignore
             socket.userId = response.id;
             next();
         }
@@ -41,12 +43,46 @@ function intializeSocket(server) {
     }));
     io.on('connection', (socket) => {
         console.log('new user connected');
-        socket.on('send-changes', delta => {
-            console.log(delta);
-        });
+        socket.on('get-document', (documentId) => __awaiter(this, void 0, void 0, function* () {
+            const document = yield findOrCreateDocument(documentId, socket.userId);
+            socket.join(documentId);
+            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data);
+            socket.on('send-changes', delta => {
+                socket.broadcast.to(documentId).emit('receive-changes', delta);
+            });
+            socket.on('save-document', (data) => __awaiter(this, void 0, void 0, function* () {
+                yield prisma.document.update({
+                    where: {
+                        documentId: documentId
+                    },
+                    data: {
+                        data: data
+                    }
+                });
+            }));
+        }));
         socket.on('disconnect', () => {
             console.log('user disconnected');
         });
     });
 }
 exports.default = intializeSocket;
+function findOrCreateDocument(documentId, userId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (documentId == null)
+            return;
+        const document = yield prisma.document.findFirst({ where: { documentId: documentId } });
+        if (!document) {
+            return yield prisma.document.create({
+                data: {
+                    documentId,
+                    userId,
+                    data: DEFAULT_VALUE
+                }
+            });
+        }
+        else {
+            return document;
+        }
+    });
+}
