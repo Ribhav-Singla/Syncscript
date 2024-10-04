@@ -7,5 +7,5 @@ export const usernameState = atom({
 
 export const filenameState = atom({
     key: 'filename',
-    default: '',
+    default: 'Untitled Document',
 })

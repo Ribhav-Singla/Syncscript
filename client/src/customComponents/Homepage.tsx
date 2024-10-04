@@ -3,10 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useRecoilValue } from "recoil";
 import { usernameState } from "@/recoil";
+import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
 
 function Homepage() {
   const navigate = useNavigate();
   const username = useRecoilValue(usernameState);
+
+  useEffect(()=>{
+
+  },[])
+
   const Newdocument = () => {
     if(username)
       navigate(`/documents/${uuidv4()}`);
@@ -17,11 +24,22 @@ function Homepage() {
   return (
     <section className="border">
       <main className="p-2 py-5">
-        <div
-          className="border-2 border-blue-500 h-40 w-36 p-4 text-center flex justify-center items-center rounded cursor-pointer"
-          onClick={Newdocument}
-        >
-          <span className="text-gray-500 text-center">Blank document</span>
+        <div className="flex justify-between items-center">
+          <div
+            className="border-2 border-blue-500 h-40 w-36 p-4 text-center flex justify-center items-center rounded cursor-pointer"
+            onClick={Newdocument}
+          >
+            <span className="text-gray-500 text-center">Blank document</span>
+          </div>
+          <div className="border-2 rounded border-green-500 px-4 py-3 w-80 flex flex-col">
+            <div>
+              <label htmlFor="documentId">DocumentId</label>
+              <Input type="text" placeholder="4d1613c0-f163-4fc5-a1a5-fe50ed4xxxx0" className="mt-1" />
+            </div>
+            <div className="mt-5 flex justify-end">
+              <Button>Join</Button>
+            </div>
+          </div>
         </div>
         <div className="mt-5">
           <h1 className="text-lg pb-2 border-b-2">Recents</h1>

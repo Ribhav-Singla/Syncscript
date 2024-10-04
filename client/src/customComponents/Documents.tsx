@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import copy from "copy-to-clipboard";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
+import { filenameState } from "@/recoil";
+import { useRecoilState } from "recoil";
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -25,6 +27,9 @@ function Documents() {
   const { id: documentId } = useParams();
   const [socket, setSocket] = useState<Socket | null>();
   const [quill, setQuill] = useState<Quill | null>();
+  const [loading,setLoading] = useState(false);
+  const [copyBtn, setCopyBtn] = useState(false);
+  const [filename,setFilename] = useRecoilState(filenameState);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -58,8 +63,11 @@ function Documents() {
   useEffect(()=>{
     if(socket == null || quill == null) return;
 
-    const interval = setInterval(()=>{
+    const interval = setInterval(async()=>{
+      setLoading(true)
       socket.emit('save-document', quill.getContents())
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setLoading(false)
     },SAVE_INTERVAL_MS)
 
     return ()=>{
@@ -118,8 +126,11 @@ function Documents() {
     <div>
       {/* Online Users */}
       <div className="online-users p-2 flex justify-between items-center bg-slate-50">
-        <div className="max-w-56">
-          <Input placeholder="File name" />
+        <div className="max-w-56 flex justify-center items-center gap-2">
+          <Input placeholder="File name" value={filename} onChange={(e)=>setFilename(e.target.value.trim())} />
+          {
+            loading ? <Spinner/> : ''
+          }
         </div>
         <div className="flex justify-center items-center gap-5">
           <div className="flex justify-center items-center gap-2">
@@ -129,10 +140,16 @@ function Documents() {
           </div>
           <div>
             <button
-              className="bg-blue-200 p-2 rounded-md hover:bg-blue-300"
-              onClick={() => copy(`${documentId}`)}
+              className = {`p-2 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${copyBtn ? `bg-green-200 hover:bg-green-300` : ''}`}
+              onClick={() =>{
+                copy(`${documentId}`)
+                setCopyBtn(true)
+                setTimeout(()=>{
+                  setCopyBtn(false);
+                },1000)
+              }}
             >
-              Share
+              { copyBtn ? 'Copied' : 'Share'}
             </button>
           </div>
         </div>
@@ -153,6 +170,12 @@ function User_avatar() {
       <AvatarFallback>CN</AvatarFallback>
     </Avatar>
   );
+}
+
+function Spinner(){
+  return (
+    <div className="spinner h-5 w-6 rounded-full border-black border-t-2 border-r-2"></div>
+  )
 }
 
 export default Documents;

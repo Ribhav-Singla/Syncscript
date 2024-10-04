@@ -38,7 +38,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar flex justify-between items-center p-2 border-b-2">
+    <nav className="navbar flex justify-between items-center p-2 border-b-2 bg-slate-100">
       <div>
         <span
           className="text-2xl cursor-pointer font-bold"
