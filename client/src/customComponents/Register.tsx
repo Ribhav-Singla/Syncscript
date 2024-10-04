@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast"
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSetRecoilState } from "recoil";
+import { usernameState } from "@/recoil";
 
 function Register() {
 
+  const setUsernameState = useSetRecoilState(usernameState);
   const navigate = useNavigate()
   const { toast } = useToast()
   const [username,setUsername] = useState('')
@@ -28,6 +31,7 @@ function Register() {
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/register`,{ username, password})
         const token = response.data.token
         localStorage.setItem('token',`Bearer ${token}`)
+        setUsernameState(username)
         navigate('/')
       } catch (error) {
         //@ts-ignore

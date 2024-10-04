@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import { PrismaClient,Prisma } from '@prisma/client'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import { isLoggedIn } from '../middleware'
 
 export const authRouter = express.Router();
 const prisma = new PrismaClient();
@@ -49,3 +50,13 @@ authRouter.post('/register', async (req: Request, res: Response) => {
         }
     }
 })
+
+authRouter.get('/me', isLoggedIn, async (req: Request, res: Response) => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId } })
+        res.status(200).json({ username : user?.username})
+    } catch (error) {
+        console.log('Error occurred in authRouter /me:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
