@@ -17,6 +17,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const DEFAULT_VALUE = '';
+const DEFAULT_FILENAME = 'Untitled document';
 function intializeSocket(server) {
     const io = new socket_io_1.Server(server, {
         cors: {
@@ -46,17 +47,19 @@ function intializeSocket(server) {
         socket.on('get-document', (documentId) => __awaiter(this, void 0, void 0, function* () {
             const document = yield findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
-            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data);
+            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data, document === null || document === void 0 ? void 0 : document.filename);
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta);
             });
-            socket.on('save-document', (data) => __awaiter(this, void 0, void 0, function* () {
+            socket.on('save-document', (data, filename) => __awaiter(this, void 0, void 0, function* () {
+                console.log('filename: ', filename);
                 yield prisma.document.update({
                     where: {
                         documentId: documentId
                     },
                     data: {
-                        data: data
+                        data: data,
+                        filename: filename || DEFAULT_FILENAME
                     }
                 });
             }));
@@ -77,7 +80,8 @@ function findOrCreateDocument(documentId, userId) {
                 data: {
                     documentId,
                     userId,
-                    data: DEFAULT_VALUE
+                    data: DEFAULT_VALUE,
+                    filename: DEFAULT_FILENAME
                 }
             });
         }

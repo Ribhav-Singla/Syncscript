@@ -6,8 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import copy from "copy-to-clipboard";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import { filenameState } from "@/recoil";
-import { useRecoilState } from "recoil";
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -29,7 +27,7 @@ function Documents() {
   const [quill, setQuill] = useState<Quill | null>();
   const [loading,setLoading] = useState(false);
   const [copyBtn, setCopyBtn] = useState(false);
-  const [filename,setFilename] = useRecoilState(filenameState);
+  const [filename,setFilename] = useState('Untitled document');
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -50,8 +48,9 @@ function Documents() {
   useEffect(()=>{
     if(socket == null || quill == null) return;
 
-    socket.once('load-document', document =>{
+    socket.once('load-document', (document,filename) =>{
       quill.setContents(document)
+      setFilename(filename)
       quill.enable()
     })
 
@@ -65,7 +64,7 @@ function Documents() {
 
     const interval = setInterval(async()=>{
       setLoading(true)
-      socket.emit('save-document', quill.getContents())
+      socket.emit('save-document', quill.getContents(), filename)
       await new Promise((resolve) => setTimeout(resolve, 500));
       setLoading(false)
     },SAVE_INTERVAL_MS)
@@ -73,7 +72,7 @@ function Documents() {
     return ()=>{
       clearInterval(interval)
     }
-  },[socket,quill])
+  },[socket,quill,filename])
 
   // text-change useEffect
   useEffect(()=>{
@@ -172,7 +171,7 @@ function User_avatar() {
   );
 }
 
-function Spinner(){
+export function Spinner(){
   return (
     <div className="spinner h-5 w-6 rounded-full border-black border-t-2 border-r-2"></div>
   )

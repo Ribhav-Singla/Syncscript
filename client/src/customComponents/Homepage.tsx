@@ -4,21 +4,37 @@ import { v4 as uuidv4 } from "uuid";
 import { useRecoilValue } from "recoil";
 import { usernameState } from "@/recoil";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function Homepage() {
   const navigate = useNavigate();
   const username = useRecoilValue(usernameState);
+  const [mydocuments, setMydocuments] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
+    const fetchMyDocuments = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/mydocuments`,
+          {
+            headers: {
+              Authorization: `${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setMydocuments(response.data);
+      } catch (error) {
+        console.log("error occured while fetching mydocuments: ", error);
+      }
+    };
 
-  },[])
+    fetchMyDocuments();
+  }, []);
 
   const Newdocument = () => {
-    if(username)
-      navigate(`/documents/${uuidv4()}`);
-    else
-      navigate('/login')
+    if (username) navigate(`/documents/${uuidv4()}`);
+    else navigate("/login");
   };
 
   return (
@@ -34,7 +50,11 @@ function Homepage() {
           <div className="border-2 rounded border-green-500 px-4 py-3 w-80 flex flex-col">
             <div>
               <label htmlFor="documentId">DocumentId</label>
-              <Input type="text" placeholder="4d1613c0-f163-4fc5-a1a5-fe50ed4xxxx0" className="mt-1" />
+              <Input
+                type="text"
+                placeholder="4d1613c0-f163-4fc5-a1a5-fe50ed4xxxx0"
+                className="mt-1"
+              />
             </div>
             <div className="mt-5 flex justify-end">
               <Button>Join</Button>
@@ -44,11 +64,21 @@ function Homepage() {
         <div className="mt-5">
           <h1 className="text-lg pb-2 border-b-2">Recents</h1>
           <div className="p-2">
-            <Recentdocs fileName="doc1" documentId="1" />
-            <Recentdocs fileName="doc1" documentId="1" />
-            <Recentdocs fileName="doc1" documentId="1" />
-            <Recentdocs fileName="doc1" documentId="1" />
-            <Recentdocs fileName="doc1" documentId="1" />
+            {mydocuments.length == 0 ? (
+              <p>No documents found</p>
+            ) : (
+              mydocuments.map(
+                (obj: { filename: string; documentId: string }) => {
+                  return (
+                    <Recentdocs
+                      key={obj.documentId}
+                      fileName={obj.filename}
+                      documentId={obj.documentId}
+                    />
+                  );
+                }
+              )
+            )}
           </div>
           <p className="text-blue-500 text-center cursor-pointer">More...</p>
         </div>

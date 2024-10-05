@@ -10,6 +10,7 @@ interface CustomSocket extends SocketIO {
 
 const prisma = new PrismaClient();
 const DEFAULT_VALUE = '';
+const DEFAULT_FILENAME = 'Untitled document';
 
 export default function intializeSocket(server: HttpServer) {
     const io = new Server(server, {
@@ -43,19 +44,20 @@ export default function intializeSocket(server: HttpServer) {
         socket.on('get-document', async documentId => {
             const document = await findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
-            socket.emit('load-document', document?.data);
+            socket.emit('load-document', document?.data, document?.filename);
 
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta)
             })
 
-            socket.on('save-document', async data => {
+            socket.on('save-document', async (data, filename) => {     
                 await prisma.document.update({
                     where: {
                         documentId : documentId
                     },
                     data: {
-                        data: data
+                        data: data,
+                        filename: filename || DEFAULT_FILENAME
                     }
                 })
             })
@@ -75,7 +77,8 @@ async function findOrCreateDocument(documentId: string, userId: string) {
             data: {
                 documentId,
                 userId,
-                data: DEFAULT_VALUE
+                data: DEFAULT_VALUE,
+                filename: DEFAULT_FILENAME
             }
         })
     } else {

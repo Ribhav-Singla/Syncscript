@@ -9,6 +9,8 @@ const auth_1 = require("./auth");
 const cors_1 = __importDefault(require("cors"));
 const http_1 = require("http");
 const socket_1 = __importDefault(require("./socket/socket"));
+const middleware_1 = require("./middleware");
+const controllers_1 = require("./controllers");
 dotenv_1.default.config();
 const PORT = process.env.PORT || 3000;
 const corsOptions = {
@@ -28,6 +30,7 @@ app.get('/', (req, res) => {
     });
 });
 app.use('/auth', auth_1.authRouter);
+app.get('/mydocuments', middleware_1.isLoggedIn, controllers_1.getMyDocuments);
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
