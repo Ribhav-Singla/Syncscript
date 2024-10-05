@@ -5,7 +5,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import intializeSocket from './socket/socket';
 import { isLoggedIn } from './middleware';
-import { deleteMyDocument, getMyDocuments } from './controllers';
+import { deleteMyDocument, getMyDocuments, verifyDocumentId } from './controllers';
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -32,6 +32,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/auth',authRouter)
 app.get('/mydocuments', isLoggedIn, getMyDocuments);
 app.post('/deleteDocument/:documentId', isLoggedIn, deleteMyDocument);
+app.get('/verifyDocumentId/:documentId', isLoggedIn ,verifyDocumentId);
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

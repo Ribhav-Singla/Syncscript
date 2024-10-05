@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMyDocument = exports.getMyDocuments = void 0;
+exports.verifyDocumentId = exports.deleteMyDocument = exports.getMyDocuments = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 function getMyDocuments(req, res) {
@@ -61,3 +61,24 @@ function deleteMyDocument(req, res) {
     });
 }
 exports.deleteMyDocument = deleteMyDocument;
+function verifyDocumentId(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { documentId } = req.params;
+        try {
+            const document = yield prisma.document.findUnique({ where: { documentId } });
+            if (document) {
+                res.status(200).json({ message: 'Document id is valid' });
+            }
+            else {
+                res.status(404).json({ message: 'Document id is invalid' });
+            }
+        }
+        catch (error) {
+            console.log('error occured while verifying the dcoumentId: ', error);
+            res.status(500).json({
+                message: 'Internal Server Error',
+            });
+        }
+    });
+}
+exports.verifyDocumentId = verifyDocumentId;

@@ -47,3 +47,20 @@ export async function deleteMyDocument(req:Request, res:Response){
         })
     }
 }
+
+export async function verifyDocumentId(req:Request, res:Response){
+    const { documentId } = req.params
+    try {
+        const document = await prisma.document.findUnique({ where : {documentId}})
+        if(document){
+            res.status(200).json({message: 'Document id is valid'})
+        }else{
+            res.status(404).json({message: 'Document id is invalid'})
+        }
+    } catch (error) {
+        console.log('error occured while verifying the dcoumentId: ',error);
+        res.status(500).json({
+            message: 'Internal Server Error',
+        })
+    }
+}

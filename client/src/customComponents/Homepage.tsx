@@ -12,6 +12,8 @@ import { myDocumentsState } from "@/recoil";
 import { ColorRing } from "react-loader-spinner";
 
 function Homepage() {
+
+  const { toast } = useToast();
   const navigate = useNavigate();
   const username = useRecoilValue(usernameState);
   const [mydocuments, setMydocuments] = useRecoilState(myDocumentsState);
@@ -19,6 +21,7 @@ function Homepage() {
   const [refreshDocuments, setRefreshDocuments] = useState(false);
   const [documentId, setDocumentId] = useState("");
   const [loading, setLoading] = useState(false);
+  const[ joinBtnLoader, setJoinBtnLoader ] = useState(false); 
 
   useEffect(() => {
     const fetchMyDocuments = async () => {
@@ -47,6 +50,27 @@ function Homepage() {
     if (username) navigate(`/documents/${uuidv4()}`);
     else navigate("/login");
   };
+
+  const handleJoin = async()=>{
+    if(!documentId) return;
+    setJoinBtnLoader(true);
+    try {
+      await axios.get(`${import.meta.env.VITE_BACKEND_URL}/verifyDocumentId/${documentId}`,{
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`
+        }
+      })
+      navigate(`/documents/${documentId}`)
+    } catch (error) {
+      console.log('error occured while validating the documentId: ',error);
+      toast({
+        //@ts-ignore
+        title: error.response.data.message
+      })
+    } finally{
+      setJoinBtnLoader(false);
+    }
+  }
 
   return (
     <section className="border">
@@ -79,7 +103,7 @@ function Homepage() {
               />
             </div>
             <div className="mt-5 flex justify-end">
-              <Button>Join</Button>
+              <Button className="w-24" onClick={handleJoin}>{ joinBtnLoader ? 'verifying...' : 'Join'}</Button>
             </div>
           </div>
         </div>
