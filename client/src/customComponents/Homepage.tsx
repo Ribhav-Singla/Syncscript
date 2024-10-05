@@ -44,12 +44,13 @@ function Homepage() {
       <main className="p-2 py-5">
         <div className="flex justify-between items-center flex-wrap">
           <div
-            className="border-2 border-blue-500 h-40 w-36 p-4 text-center flex justify-center items-center rounded cursor-pointer"
+            className="h-40 w-36 p-4 text-center flex flex-col justify-center items-center rounded cursor-pointer blank-document"
             onClick={Newdocument}
           >
+            <img src="/blankdoc.svg" alt="+" width={50} />
             <span className="text-gray-500 text-center">Blank document</span>
           </div>
-          <div className="border-2 rounded border-green-500 px-4 py-3 w-80 flex flex-col">
+          <div className="join-box rounded px-4 py-3 w-80 flex flex-col">
             <div>
               <label htmlFor="documentId">DocumentId</label>
               <Input
