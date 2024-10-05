@@ -16,6 +16,7 @@ function Homepage() {
   const [mydocuments, setMydocuments] = useRecoilState(myDocumentsState);
   const [limit, setLimit] = useState(5);
   const [refreshDocuments, setRefreshDocuments] = useState(false);
+  const [documentId, setDocumentId] = useState('');
 
   useEffect(() => {
     const fetchMyDocuments = async () => {
@@ -60,6 +61,8 @@ function Homepage() {
                 type="text"
                 placeholder="4d1613c0-f163-4fc5-a1a5-fe50ed4xxxx0"
                 className="mt-1"
+                value={documentId}
+                onChange={(e)=>setDocumentId(e.target.value)}
               />
             </div>
             <div className="mt-5 flex justify-end">

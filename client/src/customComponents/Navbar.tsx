@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { usernameState } from "@/recoil";
-import { useRecoilState } from "recoil";
+import { usernameState, myDocumentsState } from "@/recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect } from "react";
 import axios from "axios";
@@ -9,6 +9,7 @@ import axios from "axios";
 function Navbar() {
   const navigate = useNavigate();
   const [username, setUsername] = useRecoilState(usernameState);
+  const setMyDocumentsState =useSetRecoilState(myDocumentsState)
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -34,6 +35,7 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUsername("");
+    setMyDocumentsState([])
     navigate("/");
   };
 

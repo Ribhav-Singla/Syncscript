@@ -126,7 +126,7 @@ function Documents() {
       {/* Online Users */}
       <div className="online-users p-2 flex justify-between items-center bg-slate-50">
         <div className="max-w-56 flex justify-center items-center gap-2">
-          <Input placeholder="File name" value={filename} onChange={(e)=>setFilename(e.target.value.trim())} />
+          <Input placeholder="File name" value={filename} maxLength={25} onChange={(e)=>setFilename(e.target.value)} />
           {
             loading ? <Spinner/> : ''
           }
