@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import copy from "copy-to-clipboard";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
+import {ColorRing} from 'react-loader-spinner'
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -125,10 +126,10 @@ function Documents() {
     <div>
       {/* Online Users */}
       <div className="online-users p-2 flex justify-between items-center bg-slate-50">
-        <div className="max-w-56 flex justify-center items-center gap-2">
-          <Input placeholder="File name" value={filename} maxLength={25} onChange={(e)=>setFilename(e.target.value)} />
+        <div className="max-w-60 flex justify-between items-center gap-2">
+          <Input placeholder="File name" className="max-w-44" value={filename} maxLength={25} onChange={(e)=>setFilename(e.target.value)} />
           {
-            loading ? <Spinner/> : ''
+            loading ? <ColorRing height={'40'}/> : ''
           }
         </div>
         <div className="flex justify-center items-center gap-5">
@@ -169,12 +170,6 @@ function User_avatar() {
       <AvatarFallback>CN</AvatarFallback>
     </Avatar>
   );
-}
-
-export function Spinner(){
-  return (
-    <div className="spinner h-5 w-6 rounded-full border-black border-t-2 border-r-2"></div>
-  )
 }
 
 export default Documents;

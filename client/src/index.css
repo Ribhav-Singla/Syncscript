@@ -89,7 +89,7 @@ body{
 .container .ql-toolbar.ql-snow{
   display: flex;
   justify-content: center;
-  background-color: #f8fafc;
+  background-color: #eeeeee;
   border: none;
 }
 
@@ -119,8 +119,8 @@ body{
   }
 }
 
-.spinner{
-  animation: rotate 0.5s infinite linear;
+ul li{
+  list-style: disc;
 }
 
 .blank-document{
