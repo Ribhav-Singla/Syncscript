@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRecoilState } from "recoil";
 import { myDocumentsState } from "@/recoil";
 import { ColorRing } from "react-loader-spinner";
+import { Tooltip } from "react-tippy";
 
 function Homepage() {
   const { toast } = useToast();
@@ -207,6 +208,13 @@ function Recentdocs({
         {new Date(updatedAt).toLocaleString()}
       </span>
       <div className="flex justify-center items-center gap-5 w-full mt-5 sm:mt-0 sm:w-fit">
+        <Tooltip title="Not shareable" position="top" trigger="mouseenter">
+          <img src="/lock.png" alt="Lock" width={35} />
+        </Tooltip>
+        <Tooltip title="Shareable" position="top" trigger="mouseenter">
+          <img src="/unlock.png" alt="Lock" width={35} />
+        </Tooltip>
+
         <Button
           variant={"outline"}
           onClick={() => handleOpenDocument(documentId)}
