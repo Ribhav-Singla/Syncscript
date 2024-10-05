@@ -15,7 +15,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         const user = await prisma.user.findFirst({ where: { username } })
         if (user) {
             if (bcrypt.compareSync(password, user.password)) {
-                const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string)
+                const token = jwt.sign({ id: user.id, username: username }, process.env.JWT_SECRET as string)
                 res.status(200).json({ token })
             } else {
                 res.status(401).json({ message: "Invalid password" })
@@ -39,7 +39,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
                 password: hashedPassword
             }
         })
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string)
+        const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET as string)
         res.status(200).json({ token })
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

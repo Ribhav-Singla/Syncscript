@@ -12,7 +12,6 @@ import { myDocumentsState } from "@/recoil";
 import { ColorRing } from "react-loader-spinner";
 
 function Homepage() {
-
   const { toast } = useToast();
   const navigate = useNavigate();
   const username = useRecoilValue(usernameState);
@@ -21,7 +20,7 @@ function Homepage() {
   const [refreshDocuments, setRefreshDocuments] = useState(false);
   const [documentId, setDocumentId] = useState("");
   const [loading, setLoading] = useState(false);
-  const[ joinBtnLoader, setJoinBtnLoader ] = useState(false); 
+  const [joinBtnLoader, setJoinBtnLoader] = useState(false);
 
   useEffect(() => {
     const fetchMyDocuments = async () => {
@@ -51,59 +50,66 @@ function Homepage() {
     else navigate("/login");
   };
 
-  const handleJoin = async()=>{
-    if(!documentId) return;
+  const handleJoin = async () => {
+    if (!documentId) return;
     setJoinBtnLoader(true);
     try {
-      await axios.get(`${import.meta.env.VITE_BACKEND_URL}/verifyDocumentId/${documentId}`,{
-        headers: {
-          Authorization: `${localStorage.getItem("token")}`
+      await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/verifyDocumentId/${documentId}`,
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
         }
-      })
-      navigate(`/documents/${documentId}`)
+      );
+      navigate(`/documents/${documentId}`);
     } catch (error) {
-      console.log('error occured while validating the documentId: ',error);
+      console.log("error occured while validating the documentId: ", error);
       toast({
         //@ts-ignore
-        title: error.response.data.message
-      })
-    } finally{
+        title: error.response.data.message,
+      });
+    } finally {
       setJoinBtnLoader(false);
     }
-  }
+  };
 
   return (
     <section className="border">
       <main className="p-2 py-5">
-        <div className="flex justify-between items-center flex-wrap py-8 px-10">
+        <div className="grid grid-cols-12 py-8 px-5">
           <div
-            className="h-36 w-36 p-4 text-center flex flex-col justify-center items-center rounded cursor-pointer blank-document"
+            className="col-span-12 md:col-span-2 p-4 text-center flex flex-col justify-center items-center rounded cursor-pointer blank-document"
             onClick={Newdocument}
           >
             <img src="/plus.png" alt="+" width={40} />
-            <span className="text-gray-500 text-center mt-2">Blank document</span>
+            <span className="text-gray-500 text-center mt-2">
+              Blank document
+            </span>
           </div>
-          <div className="h-36 w-96 join-box rounded flex flex-col justify-start px-4 py-3">
-            <p className="text-red-500">Features</p>
-            <ul className="ps-4">
-              <li>Lorem ipsum dolor sit amet.</li>
-              <li>Lorem ipsum dolor sit amet.</li>
-              <li>Lorem ipsum dolor sit amet.</li>
-            </ul>
-          </div>
-          <div className="join-box rounded px-4 py-3 w-80 flex flex-col">
-            <div>
-              <label htmlFor="documentId">DocumentId</label>
-              <Input
-                type="text"
-                placeholder="4d1613c0-f163-4fc5-a1a5-fe50ed4xxxx0"
-                className="mt-1"
-                value={documentId}
-                onChange={(e) => setDocumentId(e.target.value)}
-              />
+          <div className="col-span-12 md:col-span-10 grid grid-cols-12 mt-5 md:mt-0 md:ms-5">
+            <div className="col-span-12 sm:col-span-6 join-box rounded flex flex-col justify-start px-4 py-3 sm:me-3">
+              <p className="text-red-500">Features</p>
+              <p>Lorem ipsum dolor sit amet consectetur adipisicing.</p>
+              <p>Lorem ipsum dolor sit amet consectetur adipisicing.</p>
+              <p>Lorem ipsum dolor sit amet consectetur adipisicing.</p>
             </div>
-            <div className="mt-5 flex justify-end">
-              <Button className="w-24" onClick={handleJoin}>{ joinBtnLoader ? 'verifying...' : 'Join'}</Button>
+            <div className="col-span-12 sm:col-span-6 join-box rounded px-4 py-3 flex flex-col sm:ms-2 mt-5 sm:mt-0">
+              <div>
+                <label htmlFor="documentId">DocumentId</label>
+                <Input
+                  type="text"
+                  placeholder="4d1613c0-f163-4fc5-a1a5-fe50ed4xxxx0"
+                  className="mt-1"
+                  value={documentId}
+                  onChange={(e) => setDocumentId(e.target.value)}
+                />
+              </div>
+              <div className="mt-5 flex justify-end">
+                <Button className="w-24" onClick={handleJoin}>
+                  {joinBtnLoader ? "verifying..." : "Join"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

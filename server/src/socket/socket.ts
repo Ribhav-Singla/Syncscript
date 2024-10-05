@@ -31,6 +31,7 @@ export default function intializeSocket(server: HttpServer) {
                 return next(new Error("Invalid token"))
             }
             socket.userId = response.id
+            socket.username = response.username
             next()
         } catch (error) {
             console.log('error occured while verify socket token: ', error);
