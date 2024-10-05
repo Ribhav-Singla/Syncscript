@@ -131,6 +131,7 @@ function Homepage() {
                       filename: string;
                       documentId: string;
                       updatedAt: Date;
+                      shareable: Boolean;
                     }) => {
                       return (
                         <Recentdocs
@@ -138,6 +139,7 @@ function Homepage() {
                           fileName={obj.filename}
                           documentId={obj.documentId}
                           updatedAt={obj.updatedAt}
+                          shareable={obj.shareable}
                           setRefreshDocuments={setRefreshDocuments}
                         />
                       );
@@ -163,11 +165,13 @@ function Recentdocs({
   fileName,
   documentId,
   updatedAt,
+  shareable,
   setRefreshDocuments,
 }: {
   fileName: string;
   documentId: string;
   updatedAt: Date;
+  shareable: Boolean;
   setRefreshDocuments: Dispatch<SetStateAction<boolean>>;
 }) {
   const { toast } = useToast();
@@ -201,6 +205,44 @@ function Recentdocs({
     }
   };
 
+  const handleShareable = async (documentId: string) => {
+    try {
+      await axios.post(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/makeShareableDocument/${documentId}`,
+        {},
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setRefreshDocuments((prev) => !prev);
+    } catch (error) {
+      console.log("error occured while making document shareable: ", error);
+    }
+  };
+
+  const handleNotShareable = async (documentId: string) => {
+    try {
+      await axios.post(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/makeNotShareableDocument/${documentId}`,
+        {},
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setRefreshDocuments((prev) => !prev);
+    } catch (error) {
+      console.log("error occured while making document unshareable: ", error);
+    }
+  };
+
   return (
     <div className="flex flex-wrap justify-between items-center p-2 bg-slate-100 rounded mb-3">
       <span>{fileName}</span>
@@ -208,13 +250,29 @@ function Recentdocs({
         {new Date(updatedAt).toLocaleString()}
       </span>
       <div className="flex justify-center items-center gap-5 w-full mt-5 sm:mt-0 sm:w-fit">
-        <Tooltip title="Not shareable" position="top" trigger="mouseenter">
-          <img src="/lock.png" alt="Lock" width={35} />
-        </Tooltip>
-        <Tooltip title="Shareable" position="top" trigger="mouseenter">
-          <img src="/unlock.png" alt="Lock" width={35} />
-        </Tooltip>
-
+        {shareable ? (
+          <div onClick={() => handleNotShareable(documentId)}>
+            <Tooltip
+              title="Make not shareable"
+              position="top"
+              trigger="mouseenter"
+              className="cursor-pointer"
+            >
+              <img src="/unlock.png" alt="Unlock" width={35} />
+            </Tooltip>
+          </div>
+        ) : (
+          <div onClick={() => handleShareable(documentId)}>
+            <Tooltip
+              title="Make shareable"
+              position="top"
+              trigger="mouseenter"
+              className="cursor-pointer"
+            >
+              <img src="/lock.png" alt="Lock" width={35} />
+            </Tooltip>
+          </div>
+        )}
         <Button
           variant={"outline"}
           onClick={() => handleOpenDocument(documentId)}

@@ -5,16 +5,16 @@ import cors from 'cors';
 import { createServer } from 'http';
 import intializeSocket from './socket/socket';
 import { isLoggedIn } from './middleware';
-import { deleteMyDocument, getMyDocuments, verifyDocumentId } from './controllers';
+import { deleteMyDocument, getMyDocuments, makeNotShareableDocument, makeShareableDocument, verifyDocumentId } from './controllers';
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const corsOptions = {
-    origin: '*', 
+    origin: '*',
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"], 
-    credentials: true, 
-  };
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+};
 
 const app = express();
 app.use(cors(corsOptions))
@@ -29,10 +29,12 @@ app.get('/', (req: Request, res: Response) => {
     })
 });
 
-app.use('/auth',authRouter)
+app.use('/auth', authRouter)
 app.get('/mydocuments', isLoggedIn, getMyDocuments);
 app.post('/deleteDocument/:documentId', isLoggedIn, deleteMyDocument);
-app.get('/verifyDocumentId/:documentId', isLoggedIn ,verifyDocumentId);
+app.get('/verifyDocumentId/:documentId', isLoggedIn, verifyDocumentId);
+app.post('/makeShareableDocument/:documentId', isLoggedIn, makeShareableDocument);
+app.post('/makeNotShareableDocument/:documentId', isLoggedIn, makeNotShareableDocument);
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

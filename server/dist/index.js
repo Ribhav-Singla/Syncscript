@@ -33,6 +33,8 @@ app.use('/auth', auth_1.authRouter);
 app.get('/mydocuments', middleware_1.isLoggedIn, controllers_1.getMyDocuments);
 app.post('/deleteDocument/:documentId', middleware_1.isLoggedIn, controllers_1.deleteMyDocument);
 app.get('/verifyDocumentId/:documentId', middleware_1.isLoggedIn, controllers_1.verifyDocumentId);
+app.post('/makeShareableDocument/:documentId', middleware_1.isLoggedIn, controllers_1.makeShareableDocument);
+app.post('/makeNotShareableDocument/:documentId', middleware_1.isLoggedIn, controllers_1.makeNotShareableDocument);
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

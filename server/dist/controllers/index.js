@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyDocumentId = exports.deleteMyDocument = exports.getMyDocuments = void 0;
+exports.makeNotShareableDocument = exports.makeShareableDocument = exports.verifyDocumentId = exports.deleteMyDocument = exports.getMyDocuments = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 function getMyDocuments(req, res) {
@@ -27,6 +27,7 @@ function getMyDocuments(req, res) {
                 select: {
                     documentId: true,
                     filename: true,
+                    shareable: true,
                     createdAt: true,
                     updatedAt: true,
                 },
@@ -65,7 +66,7 @@ function verifyDocumentId(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { documentId } = req.params;
         try {
-            const document = yield prisma.document.findUnique({ where: { documentId } });
+            const document = yield prisma.document.findUnique({ where: { documentId, shareable: true } });
             if (document) {
                 res.status(200).json({ message: 'Document id is valid' });
             }
@@ -82,3 +83,45 @@ function verifyDocumentId(req, res) {
     });
 }
 exports.verifyDocumentId = verifyDocumentId;
+function makeShareableDocument(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { documentId } = req.params;
+        try {
+            const document = yield prisma.document.update({
+                where: { documentId, userId: req.userId },
+                data: {
+                    shareable: true
+                }
+            });
+            res.status(200).json({ message: 'Document made shareable' });
+        }
+        catch (error) {
+            console.log('error occured while making the document shareable: ', error);
+            res.status(500).json({
+                message: 'Internal Server Error',
+            });
+        }
+    });
+}
+exports.makeShareableDocument = makeShareableDocument;
+function makeNotShareableDocument(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { documentId } = req.params;
+        try {
+            const document = yield prisma.document.update({
+                where: { documentId, userId: req.userId },
+                data: {
+                    shareable: false
+                }
+            });
+            res.status(200).json({ message: 'Document made not shareable' });
+        }
+        catch (error) {
+            console.log('error occured while making the document not shareable: ', error);
+            res.status(500).json({
+                message: 'Internal Server Error',
+            });
+        }
+    });
+}
+exports.makeNotShareableDocument = makeNotShareableDocument;
