@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyDocuments = void 0;
+exports.deleteMyDocument = exports.getMyDocuments = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 function getMyDocuments(req, res) {
@@ -29,6 +29,9 @@ function getMyDocuments(req, res) {
                     filename: true,
                     createdAt: true,
                     updatedAt: true,
+                },
+                orderBy: {
+                    updatedAt: 'desc'
                 }
             });
             res.status(200).json(documents);
@@ -42,3 +45,19 @@ function getMyDocuments(req, res) {
     });
 }
 exports.getMyDocuments = getMyDocuments;
+function deleteMyDocument(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { documentId } = req.params;
+        try {
+            yield prisma.document.delete({ where: { documentId, userId: req.userId } });
+            res.status(200).json({ message: 'Document deleted successfully' });
+        }
+        catch (error) {
+            console.log('error ocuured while deleteing my document: ', error);
+            res.status(500).json({
+                message: 'Internal Server Error',
+            });
+        }
+    });
+}
+exports.deleteMyDocument = deleteMyDocument;

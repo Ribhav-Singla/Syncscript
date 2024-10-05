@@ -52,7 +52,6 @@ function intializeSocket(server) {
                 socket.broadcast.to(documentId).emit('receive-changes', delta);
             });
             socket.on('save-document', (data, filename) => __awaiter(this, void 0, void 0, function* () {
-                console.log('filename: ', filename);
                 yield prisma.document.update({
                     where: {
                         documentId: documentId

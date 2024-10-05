@@ -6,17 +6,19 @@ import { usernameState } from "@/recoil";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 function Homepage() {
   const navigate = useNavigate();
   const username = useRecoilValue(usernameState);
   const [mydocuments, setMydocuments] = useState([]);
+  const [limit, setLimit] = useState(5);
 
   useEffect(() => {
     const fetchMyDocuments = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/mydocuments`,
+          `${import.meta.env.VITE_BACKEND_URL}/mydocuments?limit=${limit}`,
           {
             headers: {
               Authorization: `${localStorage.getItem("token")}`,
@@ -30,7 +32,7 @@ function Homepage() {
     };
 
     fetchMyDocuments();
-  }, []);
+  }, [limit]);
 
   const Newdocument = () => {
     if (username) navigate(`/documents/${uuidv4()}`);
@@ -40,7 +42,7 @@ function Homepage() {
   return (
     <section className="border">
       <main className="p-2 py-5">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap">
           <div
             className="border-2 border-blue-500 h-40 w-36 p-4 text-center flex justify-center items-center rounded cursor-pointer"
             onClick={Newdocument}
@@ -80,7 +82,12 @@ function Homepage() {
               )
             )}
           </div>
-          <p className="text-blue-500 text-center cursor-pointer">More...</p>
+          <p
+            className="text-blue-500 text-center cursor-pointer"
+            onClick={() => setLimit(1e9)}
+          >
+            More...
+          </p>
         </div>
       </main>
     </section>
@@ -94,13 +101,33 @@ function Recentdocs({
   fileName: string;
   documentId: string;
 }) {
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const [deleteBtnLoader, setDeleteBtnLoader] = useState(false);
+
   const handleOpenDocument = (documentId: string) => {
     navigate(`/documents/${documentId}`);
   };
 
-  const handleDeleteDocument = (documentId: string) => {
-    console.log(documentId);
+  const handleDeleteDocument = async (documentId: string) => {    
+    setDeleteBtnLoader(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/deleteDocument/${documentId}`, {},
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      toast({
+        title: response.data.message,
+      });
+    } catch (error) {
+      console.log("error occured while deleting the document: ", error);
+    } finally {
+      setDeleteBtnLoader(false);
+    }
   };
 
   return (
@@ -117,7 +144,7 @@ function Recentdocs({
           variant={"destructive"}
           onClick={() => handleDeleteDocument(documentId)}
         >
-          Delete
+          {deleteBtnLoader ? "Deleting.." : "Delete"}
         </Button>
       </div>
     </div>

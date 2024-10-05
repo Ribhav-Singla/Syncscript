@@ -31,6 +31,7 @@ app.get('/', (req, res) => {
 });
 app.use('/auth', auth_1.authRouter);
 app.get('/mydocuments', middleware_1.isLoggedIn, controllers_1.getMyDocuments);
+app.post('/deleteDocument/:documentId', middleware_1.isLoggedIn, controllers_1.deleteMyDocument);
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

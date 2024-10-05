@@ -19,6 +19,9 @@ export async function getMyDocuments(req:Request,res:Response){
                 filename : true,
                 createdAt : true,
                 updatedAt : true,
+            },
+            orderBy:{
+                updatedAt : 'desc'
             }
         });
 
@@ -26,6 +29,19 @@ export async function getMyDocuments(req:Request,res:Response){
 
     } catch (error) {
         console.log('error occured while fetching the mydocuments: ',error);
+        res.status(500).json({
+            message: 'Internal Server Error',
+        })
+    }
+}
+
+export async function deleteMyDocument(req:Request, res:Response){   
+    const { documentId } = req.params
+    try {
+        await prisma.document.delete({ where : { documentId, userId : req.userId}})
+        res.status(200).json({message: 'Document deleted successfully'})
+    } catch (error) {
+        console.log('error ocuured while deleteing my document: ',error);
         res.status(500).json({
             message: 'Internal Server Error',
         })
