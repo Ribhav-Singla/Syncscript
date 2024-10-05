@@ -4,15 +4,18 @@ import { v4 as uuidv4 } from "uuid";
 import { useRecoilValue } from "recoil";
 import { usernameState } from "@/recoil";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import { useRecoilState } from "recoil";
+import { myDocumentsState } from "@/recoil";
 
 function Homepage() {
   const navigate = useNavigate();
   const username = useRecoilValue(usernameState);
-  const [mydocuments, setMydocuments] = useState([]);
+  const [mydocuments, setMydocuments] = useRecoilState(myDocumentsState);
   const [limit, setLimit] = useState(5);
+  const [refreshDocuments, setRefreshDocuments] = useState(false);
 
   useEffect(() => {
     const fetchMyDocuments = async () => {
@@ -32,7 +35,7 @@ function Homepage() {
     };
 
     fetchMyDocuments();
-  }, [limit]);
+  }, [limit,refreshDocuments]);
 
   const Newdocument = () => {
     if (username) navigate(`/documents/${uuidv4()}`);
@@ -71,12 +74,14 @@ function Homepage() {
               <p>No documents found</p>
             ) : (
               mydocuments.map(
-                (obj: { filename: string; documentId: string }) => {
+                (obj: { filename: string; documentId: string, updatedAt: Date }) => {
                   return (
                     <Recentdocs
                       key={obj.documentId}
                       fileName={obj.filename}
                       documentId={obj.documentId}
+                      updatedAt = {obj.updatedAt}
+                      setRefreshDocuments={setRefreshDocuments}
                     />
                   );
                 }
@@ -98,9 +103,13 @@ function Homepage() {
 function Recentdocs({
   fileName,
   documentId,
+  updatedAt,
+  setRefreshDocuments,
 }: {
   fileName: string;
   documentId: string;
+  updatedAt: Date;
+  setRefreshDocuments: Dispatch<SetStateAction<boolean>>;
 }) {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -110,17 +119,19 @@ function Recentdocs({
     navigate(`/documents/${documentId}`);
   };
 
-  const handleDeleteDocument = async (documentId: string) => {    
+  const handleDeleteDocument = async (documentId: string) => {
     setDeleteBtnLoader(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/deleteDocument/${documentId}`, {},
+        `${import.meta.env.VITE_BACKEND_URL}/deleteDocument/${documentId}`,
+        {},
         {
           headers: {
             Authorization: `${localStorage.getItem("token")}`,
           },
         }
       );
+      setRefreshDocuments(prev => !prev);
       toast({
         title: response.data.message,
       });
@@ -134,6 +145,7 @@ function Recentdocs({
   return (
     <div className="flex justify-between items-center p-2 bg-slate-100 rounded mb-3">
       <span>{fileName}</span>
+      <span className="text-gray-500">{new Date(updatedAt).toLocaleString()}</span>
       <div className="flex justify-center items-center gap-5">
         <Button
           variant={"outline"}
