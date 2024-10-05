@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import copy from "copy-to-clipboard";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import {ColorRing} from 'react-loader-spinner'
+import { ColorRing } from "react-loader-spinner";
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -26,9 +26,10 @@ function Documents() {
   const { id: documentId } = useParams();
   const [socket, setSocket] = useState<Socket | null>();
   const [quill, setQuill] = useState<Quill | null>();
-  const [loading,setLoading] = useState(false);
-  const [copyBtn, setCopyBtn] = useState(false);
-  const [filename,setFilename] = useState('Untitled document');
+  const [loading, setLoading] = useState(false);
+  const [filename, setFilename] = useState("Untitled document");
+  const [editCopyBtn, setEditCopyBtn] = useState(false);
+  const [viewCopyBtn, setViewCopyBtn] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
@@ -47,79 +48,76 @@ function Documents() {
   }, []);
 
   // load-document useEffect
-  useEffect(()=>{
-    if(socket == null || quill == null) return;
+  useEffect(() => {
+    if (socket == null || quill == null) return;
 
-    socket.once('load-document', (document,filename) =>{
-      quill.setContents(document)
-      setFilename(filename)
-      quill.enable()
-    })
+    socket.once("load-document", (document, filename) => {
+      quill.setContents(document);
+      setFilename(filename);
+      quill.enable();
+    });
 
-    socket.emit('get-document', documentId)
-
-  },[socket, quill, documentId])
+    socket.emit("get-document", documentId);
+  }, [socket, quill, documentId]);
 
   // save-document useEffect
-  useEffect(()=>{
-    if(socket == null || quill == null) return;
+  useEffect(() => {
+    if (socket == null || quill == null) return;
 
-    const interval = setInterval(async()=>{
-      setLoading(true)
-      socket.emit('save-document', quill.getContents(), filename)
+    const interval = setInterval(async () => {
+      setLoading(true);
+      socket.emit("save-document", quill.getContents(), filename);
       await new Promise((resolve) => setTimeout(resolve, 500));
-      setLoading(false)
-    },SAVE_INTERVAL_MS)
+      setLoading(false);
+    }, SAVE_INTERVAL_MS);
 
-    return ()=>{
-      clearInterval(interval)
-    }
-  },[socket,quill,filename])
+    return () => {
+      clearInterval(interval);
+    };
+  }, [socket, quill, filename]);
 
   // text-change useEffect
-  useEffect(()=>{
-    if(socket == null || quill == null) return;
+  useEffect(() => {
+    if (socket == null || quill == null) return;
 
     //@ts-ignore
-    const handler = (delta,oldDelta,source)=>{
-      if(source !== 'user') return;
-      socket.emit('send-changes', delta)
-    }
-    quill.on('text-change', handler);
+    const handler = (delta, oldDelta, source) => {
+      if (source !== "user") return;
+      socket.emit("send-changes", delta);
+    };
+    quill.on("text-change", handler);
     return () => {
-      quill.off('text-change', handler);
-    }
-
-  })
+      quill.off("text-change", handler);
+    };
+  });
 
   // receive-changes useEffect
-  useEffect(()=>{
-    if(socket == null || quill == null) return;
+  useEffect(() => {
+    if (socket == null || quill == null) return;
 
     //@ts-ignore
-    const handler = (delta)=>{
-      quill.updateContents(delta)
-    }
-    socket.on('receive-changes', handler);
+    const handler = (delta) => {
+      quill.updateContents(delta);
+    };
+    socket.on("receive-changes", handler);
     return () => {
-      socket.off('receive-changes', handler);
-    }
-
-  })
+      socket.off("receive-changes", handler);
+    };
+  });
 
   // onlineUsers useEffect
-  useEffect(()=>{
-    if(!socket) return;
+  useEffect(() => {
+    if (!socket) return;
     //@ts-ignore
-    const handler = (onlineUsers)=>{
-      setOnlineUsers(onlineUsers)
-    }    
-    socket.on('load-onlineUsers',handler)
+    const handler = (onlineUsers) => {
+      setOnlineUsers(onlineUsers);
+    };
+    socket.on("load-onlineUsers", handler);
 
-    return ()=>{
-      socket.off('load-onlineUsers',handler)
-    }
-  },[socket,documentId])
+    return () => {
+      socket.off("load-onlineUsers", handler);
+    };
+  }, [socket, documentId]);
 
   const wrapperRef = useCallback((wrapper: HTMLDivElement | null) => {
     if (wrapper == null) return;
@@ -132,8 +130,8 @@ function Documents() {
       modules: { toolbar: TOOLBAR_OPTIONS },
     });
 
-    q.disable()
-    q.setText('Loading...')
+    q.disable();
+    q.setText("Loading...");
     setQuill(q);
   }, []);
 
@@ -142,31 +140,49 @@ function Documents() {
       {/* Online Users */}
       <div className="online-users p-2 flex justify-between items-center bg-slate-50">
         <div className="max-w-60 flex justify-between items-center gap-2">
-          <Input placeholder="File name" className="max-w-44" value={filename} maxLength={25} onChange={(e)=>setFilename(e.target.value)} />
-          {
-            loading ? <ColorRing height={'40'}/> : ''
-          }
+          <Input
+            placeholder="File name"
+            className="max-w-44"
+            value={filename}
+            maxLength={25}
+            onChange={(e) => setFilename(e.target.value)}
+          />
+          {loading ? <ColorRing height={"40"} /> : ""}
         </div>
         <div className="flex justify-center items-center gap-5">
           <div className="flex justify-center items-center gap-2">
-            {
-              onlineUsers.map((item,index)=>{
-                return <User_avatar key={index} username={item}/>
-              })
-            }
+            {onlineUsers.map((item, index) => {
+              return <User_avatar key={index} username={item} />;
+            })}
           </div>
-          <div>
+          <div className="flex justify-center items-center gap-3">
             <button
-              className = {`p-2 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${copyBtn ? `bg-green-200 hover:bg-green-300` : ''}`}
-              onClick={() =>{
-                copy(`${documentId}`)
-                setCopyBtn(true)
-                setTimeout(()=>{
-                  setCopyBtn(false);
-                },1000)
+              className={`p-2 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
+                editCopyBtn ? `bg-green-200 hover:bg-green-300` : ""
+              }`}
+              onClick={() => {
+                copy(`${documentId}`);
+                setEditCopyBtn(true);
+                setTimeout(() => {
+                  setEditCopyBtn(false);
+                }, 1000);
               }}
             >
-              { copyBtn ? 'Copied' : 'Share'}
+              {editCopyBtn ? "Copied" : "Edit Link"}
+            </button>
+            <button
+              className={`p-2 px-1 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
+                viewCopyBtn ? `bg-green-200 hover:bg-green-300` : ""
+              }`}
+              onClick={() => {
+                copy(`${documentId}`);
+                setViewCopyBtn(true);
+                setTimeout(() => {
+                  setViewCopyBtn(false);
+                }, 1000);
+              }}
+            >
+              {viewCopyBtn ? "Copied" : "View Link"}
             </button>
           </div>
         </div>
@@ -180,11 +196,13 @@ function Documents() {
   );
 }
 
-function User_avatar({username}:{username:string}) {
+function User_avatar({ username }: { username: string }) {
   return (
     <Avatar className="">
       <AvatarImage src="/" />
-      <AvatarFallback>{username.toUpperCase()[0] + username.toUpperCase()[1]}</AvatarFallback>
+      <AvatarFallback>
+        {username.toUpperCase()[0] + username.toUpperCase()[1]}
+      </AvatarFallback>
     </Avatar>
   );
 }
