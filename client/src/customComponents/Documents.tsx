@@ -29,6 +29,7 @@ function Documents() {
   const [loading,setLoading] = useState(false);
   const [copyBtn, setCopyBtn] = useState(false);
   const [filename,setFilename] = useState('Untitled document');
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -106,6 +107,20 @@ function Documents() {
 
   })
 
+  // onlineUsers useEffect
+  useEffect(()=>{
+    if(!socket) return;
+    //@ts-ignore
+    const handler = (onlineUsers)=>{
+      setOnlineUsers(onlineUsers)
+    }    
+    socket.on('load-onlineUsers',handler)
+
+    return ()=>{
+      socket.off('load-onlineUsers',handler)
+    }
+  },[socket,documentId])
+
   const wrapperRef = useCallback((wrapper: HTMLDivElement | null) => {
     if (wrapper == null) return;
 
@@ -134,9 +149,11 @@ function Documents() {
         </div>
         <div className="flex justify-center items-center gap-5">
           <div className="flex justify-center items-center gap-2">
-            <User_avatar />
-            <User_avatar />
-            <User_avatar />
+            {
+              onlineUsers.map((item,index)=>{
+                return <User_avatar key={index} username={item}/>
+              })
+            }
           </div>
           <div>
             <button
@@ -163,11 +180,11 @@ function Documents() {
   );
 }
 
-function User_avatar() {
+function User_avatar({username}:{username:string}) {
   return (
-    <Avatar>
-      <AvatarImage src="https://github.com/shadcn.png" />
-      <AvatarFallback>CN</AvatarFallback>
+    <Avatar className="">
+      <AvatarImage src="/" />
+      <AvatarFallback>{username.toUpperCase()[0] + username.toUpperCase()[1]}</AvatarFallback>
     </Avatar>
   );
 }

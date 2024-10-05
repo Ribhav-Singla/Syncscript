@@ -40,11 +40,12 @@ export default function intializeSocket(server: HttpServer) {
     })
 
     io.on('connection', (socket: CustomSocket) => {
-        console.log('new user connected');
+        console.log('new user connected: ',socket.username);
 
         socket.on('get-document', async documentId => {
             const document = await findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
+            socket.documentId = documentId;
             socket.emit('load-document', document?.data, document?.filename);
 
             socket.on('send-changes', delta => {
@@ -62,10 +63,27 @@ export default function intializeSocket(server: HttpServer) {
                     }
                 })
             })
+
+            // emitting the list of online users within the same room
+            const connectedSockets = io.sockets.adapter.rooms.get(documentId);
+            if(connectedSockets){
+                //@ts-ignore
+                const onlineUsers = Array.from(connectedSockets).map((socket)=>{ return io.sockets.sockets.get(socket).username})
+                io.to(documentId).emit('load-onlineUsers',onlineUsers)
+            }
+            
         })
 
         socket.on('disconnect', () => {
             console.log('user disconnected');
+            // emitting the list of online users within the same room
+            const documentId = socket.documentId
+            const connectedSockets = io.sockets.adapter.rooms.get(documentId);
+            if(connectedSockets){
+                //@ts-ignore
+                const onlineUsers = Array.from(connectedSockets).map((socket)=>{ return io.sockets.sockets.get(socket).username})
+                io.to(documentId).emit('load-onlineUsers',onlineUsers)
+            }
         })
     })
 }

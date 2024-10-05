@@ -27,7 +27,7 @@ exports.authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0
         const user = yield prisma.user.findFirst({ where: { username } });
         if (user) {
             if (bcryptjs_1.default.compareSync(password, user.password)) {
-                const token = jsonwebtoken_1.default.sign({ id: user.id }, process.env.JWT_SECRET);
+                const token = jsonwebtoken_1.default.sign({ id: user.id, username: username }, process.env.JWT_SECRET);
                 res.status(200).json({ token });
             }
             else {
@@ -53,7 +53,7 @@ exports.authRouter.post('/register', (req, res) => __awaiter(void 0, void 0, voi
                 password: hashedPassword
             }
         });
-        const token = jsonwebtoken_1.default.sign({ id: user.id }, process.env.JWT_SECRET);
+        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET);
         res.status(200).json({ token });
     }
     catch (error) {

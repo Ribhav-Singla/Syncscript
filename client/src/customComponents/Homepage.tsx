@@ -201,12 +201,12 @@ function Recentdocs({
   };
 
   return (
-    <div className="flex justify-between items-center p-2 bg-slate-100 rounded mb-3">
+    <div className="flex flex-wrap justify-between items-center p-2 bg-slate-100 rounded mb-3">
       <span>{fileName}</span>
       <span className="text-gray-500">
         {new Date(updatedAt).toLocaleString()}
       </span>
-      <div className="flex justify-center items-center gap-5">
+      <div className="flex justify-center items-center gap-5 w-full mt-5 sm:mt-0 sm:w-fit">
         <Button
           variant={"outline"}
           onClick={() => handleOpenDocument(documentId)}

@@ -35,6 +35,7 @@ function intializeSocket(server) {
                 return next(new Error("Invalid token"));
             }
             socket.userId = response.id;
+            socket.username = response.username;
             next();
         }
         catch (error) {
@@ -43,10 +44,11 @@ function intializeSocket(server) {
         }
     }));
     io.on('connection', (socket) => {
-        console.log('new user connected');
+        console.log('new user connected: ', socket.username);
         socket.on('get-document', (documentId) => __awaiter(this, void 0, void 0, function* () {
             const document = yield findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
+            socket.documentId = documentId;
             socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data, document === null || document === void 0 ? void 0 : document.filename);
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta);
@@ -62,9 +64,24 @@ function intializeSocket(server) {
                     }
                 });
             }));
+            // emitting the list of online users within the same room
+            const connectedSockets = io.sockets.adapter.rooms.get(documentId);
+            if (connectedSockets) {
+                //@ts-ignore
+                const onlineUsers = Array.from(connectedSockets).map((socket) => { return io.sockets.sockets.get(socket).username; });
+                io.to(documentId).emit('load-onlineUsers', onlineUsers);
+            }
         }));
         socket.on('disconnect', () => {
             console.log('user disconnected');
+            // emitting the list of online users within the same room
+            const documentId = socket.documentId;
+            const connectedSockets = io.sockets.adapter.rooms.get(documentId);
+            if (connectedSockets) {
+                //@ts-ignore
+                const onlineUsers = Array.from(connectedSockets).map((socket) => { return io.sockets.sockets.get(socket).username; });
+                io.to(documentId).emit('load-onlineUsers', onlineUsers);
+            }
         });
     });
 }
