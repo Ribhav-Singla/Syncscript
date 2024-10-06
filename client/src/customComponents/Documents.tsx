@@ -10,6 +10,7 @@ import { ColorRing } from "react-loader-spinner";
 import { usernameState } from "@/recoil";
 import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -24,6 +25,24 @@ const TOOLBAR_OPTIONS = [
   ["image", "video", "blockquote", "code-block"],
   ["clean"],
 ];
+
+const handleNotShareable = async (documentId: string) => {
+  try {
+    await axios.post(
+      `${
+        import.meta.env.VITE_BACKEND_URL
+      }/makeNotShareableDocument/${documentId}`,
+      {},
+      {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.log("error occured while making document unshareable: ", error);
+  }
+};
 
 function Documents() {
   const navigate = useNavigate();
@@ -54,6 +73,8 @@ function Documents() {
       return () => {
         if(documentOwner == username){          
           s.emit('close-document', documentId)
+          //@ts-ignore
+          handleNotShareable(documentId)
         }
         s.disconnect();
       };
