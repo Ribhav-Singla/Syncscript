@@ -7,6 +7,8 @@ import copy from "copy-to-clipboard";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { ColorRing } from "react-loader-spinner";
+import { usernameState } from "@/recoil";
+import { useRecoilValue } from "recoil";
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -24,13 +26,15 @@ const TOOLBAR_OPTIONS = [
 
 function Documents() {
   const { id: documentId } = useParams();
+  const username = useRecoilValue(usernameState);
   const [socket, setSocket] = useState<Socket | null>();
   const [quill, setQuill] = useState<Quill | null>();
   const [loading, setLoading] = useState(false);
   const [filename, setFilename] = useState("Untitled document");
   const [CopyBtn, setCopyBtn] = useState(false);
   const [editMode, setEditMode] = useState(true);
-  const [viewMode, setViewMode] = useState(true);
+  const [documentOwner, setDocumentOwner] = useState("");
+  const [documentStatus, setDocumentStatus] = useState("Editable");
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
@@ -52,9 +56,10 @@ function Documents() {
   useEffect(() => {
     if (socket == null || quill == null) return;
 
-    socket.once("load-document", (document, filename) => {
+    socket.once("load-document", (document, filename, documentOwner) => {
       quill.setContents(document);
       setFilename(filename);
+      setDocumentOwner(documentOwner);
       quill.enable();
     });
 
@@ -120,6 +125,25 @@ function Documents() {
     };
   }, [socket, documentId]);
 
+  // edit, view useEffect
+  useEffect(() => {
+    if (socket == null) return;
+
+    const handler = (editMode: boolean) => {
+      if (!editMode) {
+        quill?.disable();
+      } else {
+        quill?.enable();
+      }
+    };
+
+    socket.emit("send-toggleEditMode", editMode);
+    socket.on("load-toggleEditMode", handler);
+    return () => {
+      socket.off("load-toggleEditMode", handler);
+    };
+  }, [socket, quill, editMode, documentId]);
+
   const wrapperRef = useCallback((wrapper: HTMLDivElement | null) => {
     if (wrapper == null) return;
 
@@ -160,22 +184,18 @@ function Documents() {
           </div>
           {/* Edit, View, Share Btns */}
           <div className="justify-center items-center gap-3 hidden sm:flex">
-            <button
-              className={`p-2 rounded-md bg-green-200 hover:bg-green-300 ${
-                viewMode ? `` : "bg-red-200 hover:bg-red-300"
-              }`}
-              onClick={() => setViewMode((prev) => !prev)}
-            >
-              View
-            </button>
-            <button
-              className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
-                editMode ? "" : `bg-red-200 hover:bg-red-300`
-              }`}
-              onClick={() => setEditMode((prev) => !prev)}
-            >
-              Edit
-            </button>
+            {username == documentOwner ? (
+              <button
+                className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
+                  editMode ? "" : `bg-red-200 hover:bg-red-300`
+                }`}
+                onClick={() => setEditMode((prev) => !prev)}
+              >
+                Edit
+              </button>
+            ) : (
+              ""
+            )}
             <button
               className={`p-2 px-1 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
                 CopyBtn ? `bg-green-200 hover:bg-green-300` : ""
@@ -194,14 +214,6 @@ function Documents() {
         </div>
       </div>
       <div className="flex justify-center items-center gap-5 my-2 sm:hidden">
-        <button
-          className={`p-2 rounded-md bg-green-200 hover:bg-green-300 ${
-            viewMode ? `` : "bg-red-200 hover:bg-red-300"
-          }`}
-          onClick={() => setViewMode((prev) => !prev)}
-        >
-          View
-        </button>
         <button
           className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
             editMode ? "" : `bg-red-200 hover:bg-red-300`
@@ -227,7 +239,7 @@ function Documents() {
       </div>
 
       {/* Text Editor */}
-      <div className="md:flex justify-center items-center">
+      <div className="flex justify-center items-center">
         <div className="container" ref={wrapperRef}></div>
       </div>
     </div>
