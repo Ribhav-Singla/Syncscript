@@ -40,22 +40,22 @@ export default function intializeSocket(server: HttpServer) {
     })
 
     io.on('connection', (socket: CustomSocket) => {
-        console.log('new user connected: ',socket.username);
+        console.log('new user connected: ', socket.username);
 
         socket.on('get-document', async documentId => {
             const document = await findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
             socket.documentId = documentId;
-            socket.emit('load-document', document?.data, document?.filename);
+            socket.emit('load-document', document?.data, document?.filename, document?.user.username);
 
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta)
             })
 
-            socket.on('save-document', async (data, filename) => {     
+            socket.on('save-document', async (data, filename) => {
                 await prisma.document.update({
                     where: {
-                        documentId : documentId
+                        documentId: documentId
                     },
                     data: {
                         data: data,
@@ -64,14 +64,18 @@ export default function intializeSocket(server: HttpServer) {
                 })
             })
 
+            socket.on('send-toggleEditMode', data => {
+                socket.broadcast.to(documentId).emit('load-toggleEditMode', data)
+            })
+
             // emitting the list of online users within the same room
             const connectedSockets = io.sockets.adapter.rooms.get(documentId);
-            if(connectedSockets){
+            if (connectedSockets) {
                 //@ts-ignore
-                const onlineUsers = Array.from(connectedSockets).map((socket)=>{ return io.sockets.sockets.get(socket).username})
-                io.to(documentId).emit('load-onlineUsers',onlineUsers)
+                const onlineUsers = Array.from(connectedSockets).map((socket) => { return io.sockets.sockets.get(socket).username })
+                io.to(documentId).emit('load-onlineUsers', onlineUsers)
             }
-            
+
         })
 
         socket.on('disconnect', () => {
@@ -79,10 +83,10 @@ export default function intializeSocket(server: HttpServer) {
             // emitting the list of online users within the same room
             const documentId = socket.documentId
             const connectedSockets = io.sockets.adapter.rooms.get(documentId);
-            if(connectedSockets){
+            if (connectedSockets) {
                 //@ts-ignore
-                const onlineUsers = Array.from(connectedSockets).map((socket)=>{ return io.sockets.sockets.get(socket).username})
-                io.to(documentId).emit('load-onlineUsers',onlineUsers)
+                const onlineUsers = Array.from(connectedSockets).map((socket) => { return io.sockets.sockets.get(socket).username })
+                io.to(documentId).emit('load-onlineUsers', onlineUsers)
             }
         })
     })
@@ -90,7 +94,7 @@ export default function intializeSocket(server: HttpServer) {
 
 async function findOrCreateDocument(documentId: string, userId: string) {
     if (documentId == null) return
-    const document = await prisma.document.findFirst({ where: { documentId: documentId } })
+    const document = await prisma.document.findFirst({ where: { documentId: documentId }, include: { user: { select: { username: true } } } })
     if (!document) {
         return await prisma.document.create({
             data: {
@@ -98,7 +102,14 @@ async function findOrCreateDocument(documentId: string, userId: string) {
                 userId,
                 data: DEFAULT_VALUE,
                 filename: DEFAULT_FILENAME
-            }
+            },
+            include: {  
+                user: {
+                    select: {
+                        username: true,  
+                    },
+                },
+            },
         })
     } else {
         return document

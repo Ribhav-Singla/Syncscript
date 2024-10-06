@@ -49,7 +49,7 @@ function intializeSocket(server) {
             const document = yield findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
             socket.documentId = documentId;
-            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data, document === null || document === void 0 ? void 0 : document.filename);
+            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data, document === null || document === void 0 ? void 0 : document.filename, document === null || document === void 0 ? void 0 : document.user.username);
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta);
             });
@@ -64,6 +64,9 @@ function intializeSocket(server) {
                     }
                 });
             }));
+            socket.on('send-toggleEditMode', data => {
+                socket.broadcast.to(documentId).emit('load-toggleEditMode', data);
+            });
             // emitting the list of online users within the same room
             const connectedSockets = io.sockets.adapter.rooms.get(documentId);
             if (connectedSockets) {
@@ -90,7 +93,7 @@ function findOrCreateDocument(documentId, userId) {
     return __awaiter(this, void 0, void 0, function* () {
         if (documentId == null)
             return;
-        const document = yield prisma.document.findFirst({ where: { documentId: documentId } });
+        const document = yield prisma.document.findFirst({ where: { documentId: documentId }, include: { user: { select: { username: true } } } });
         if (!document) {
             return yield prisma.document.create({
                 data: {
@@ -98,7 +101,14 @@ function findOrCreateDocument(documentId, userId) {
                     userId,
                     data: DEFAULT_VALUE,
                     filename: DEFAULT_FILENAME
-                }
+                },
+                include: {
+                    user: {
+                        select: {
+                            username: true,
+                        },
+                    },
+                },
             });
         }
         else {
