@@ -34,7 +34,6 @@ function Documents() {
   const [CopyBtn, setCopyBtn] = useState(false);
   const [editMode, setEditMode] = useState(true);
   const [documentOwner, setDocumentOwner] = useState("");
-  const [documentStatus, setDocumentStatus] = useState("Editable");
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {

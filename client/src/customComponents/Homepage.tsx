@@ -91,9 +91,9 @@ function Homepage() {
           <div className="col-span-12 md:col-span-10 grid grid-cols-12 mt-5 md:mt-0 md:ms-5">
             <div className="col-span-12 sm:col-span-6 join-box rounded flex flex-col justify-start px-4 py-3 sm:me-3">
               <p className="text-red-500">Features</p>
-              <p>Lorem ipsum dolor sit amet consectetur adipisicing.</p>
-              <p>Lorem ipsum dolor sit amet consectetur adipisicing.</p>
-              <p>Lorem ipsum dolor sit amet consectetur adipisicing.</p>
+              <p>&bull; Real time text edior.</p>
+              <p>&bull; Easily share documents with <strong>Id</strong>.</p>
+              <p>&bull; Enhanced <strong>edit</strong> & <strong>share</strong> locks implemented!</p>
             </div>
             <div className="col-span-12 sm:col-span-6 join-box rounded px-4 py-3 flex flex-col sm:ms-2 mt-5 sm:mt-0">
               <div>
