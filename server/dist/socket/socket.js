@@ -67,6 +67,9 @@ function intializeSocket(server) {
             socket.on('send-toggleEditMode', data => {
                 socket.broadcast.to(documentId).emit('load-toggleEditMode', data);
             });
+            socket.on("close-document", (documentId) => {
+                socket.broadcast.to(documentId).emit("close-document");
+            });
             // emitting the list of online users within the same room
             const connectedSockets = io.sockets.adapter.rooms.get(documentId);
             if (connectedSockets) {

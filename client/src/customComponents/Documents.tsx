@@ -9,6 +9,7 @@ import { io, Socket } from "socket.io-client";
 import { ColorRing } from "react-loader-spinner";
 import { usernameState } from "@/recoil";
 import { useRecoilValue } from "recoil";
+import { useNavigate } from "react-router-dom";
 
 const URL = `${import.meta.env.VITE_BACKEND_URL}`;
 const SAVE_INTERVAL_MS = 2000;
@@ -25,6 +26,7 @@ const TOOLBAR_OPTIONS = [
 ];
 
 function Documents() {
+  const navigate = useNavigate();
   const { id: documentId } = useParams();
   const username = useRecoilValue(usernameState);
   const [socket, setSocket] = useState<Socket | null>();
@@ -44,12 +46,34 @@ function Documents() {
       });
       setSocket(s);
       s.connect();
+      
+      s.on('disconnect',()=>{
+        console.log('Disconnected from server');
+      })
 
       return () => {
+        if(documentOwner == username){          
+          s.emit('close-document', documentId)
+        }
         s.disconnect();
       };
     }
-  }, []);
+  }, [username,documentOwner,documentId]);
+
+  // close-document useEffect
+  useEffect(()=>{
+    if(socket == null) return;
+  
+    const handler = ()=>{
+      window.alert('The document has been closed by the owner.');
+      socket.disconnect();
+      navigate('/');
+    }
+    socket.on('close-document',handler);
+    return ()=>{
+      socket.off('close-document',handler);
+    }
+  },[socket])
 
   // load-document useEffect
   useEffect(() => {

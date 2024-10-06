@@ -68,6 +68,10 @@ export default function intializeSocket(server: HttpServer) {
                 socket.broadcast.to(documentId).emit('load-toggleEditMode', data)
             })
 
+            socket.on("close-document", (documentId:string) => {
+                socket.broadcast.to(documentId).emit("close-document");
+            });
+
             // emitting the list of online users within the same room
             const connectedSockets = io.sockets.adapter.rooms.get(documentId);
             if (connectedSockets) {
@@ -103,10 +107,10 @@ async function findOrCreateDocument(documentId: string, userId: string) {
                 data: DEFAULT_VALUE,
                 filename: DEFAULT_FILENAME
             },
-            include: {  
+            include: {
                 user: {
                     select: {
-                        username: true,  
+                        username: true,
                     },
                 },
             },
