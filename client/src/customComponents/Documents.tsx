@@ -28,8 +28,9 @@ function Documents() {
   const [quill, setQuill] = useState<Quill | null>();
   const [loading, setLoading] = useState(false);
   const [filename, setFilename] = useState("Untitled document");
-  const [editCopyBtn, setEditCopyBtn] = useState(false);
-  const [viewCopyBtn, setViewCopyBtn] = useState(false);
+  const [CopyBtn, setCopyBtn] = useState(false);
+  const [editMode, setEditMode] = useState(true);
+  const [viewMode, setViewMode] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
@@ -137,8 +138,8 @@ function Documents() {
 
   return (
     <div>
-      {/* Online Users */}
       <div className="online-users p-2 flex justify-between items-center bg-slate-50">
+        {/* filename input box */}
         <div className="max-w-60 flex justify-between items-center gap-2">
           <Input
             placeholder="File name"
@@ -149,47 +150,84 @@ function Documents() {
           />
           {loading ? <ColorRing height={"40"} /> : ""}
         </div>
+
         <div className="flex justify-center items-center gap-5">
+          {/* Online Users Avatars */}
           <div className="flex justify-center items-center gap-2">
             {onlineUsers.map((item, index) => {
               return <User_avatar key={index} username={item} />;
             })}
           </div>
-          <div className="flex justify-center items-center gap-3">
+          {/* Edit, View, Share Btns */}
+          <div className="justify-center items-center gap-3 hidden sm:flex">
             <button
-              className={`p-2 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
-                editCopyBtn ? `bg-green-200 hover:bg-green-300` : ""
+              className={`p-2 rounded-md bg-green-200 hover:bg-green-300 ${
+                viewMode ? `` : "bg-red-200 hover:bg-red-300"
               }`}
-              onClick={() => {
-                copy(`${documentId}`);
-                setEditCopyBtn(true);
-                setTimeout(() => {
-                  setEditCopyBtn(false);
-                }, 1000);
-              }}
+              onClick={() => setViewMode((prev) => !prev)}
             >
-              {editCopyBtn ? "Copied" : "Edit Link"}
+              View
+            </button>
+            <button
+              className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
+                editMode ? "" : `bg-red-200 hover:bg-red-300`
+              }`}
+              onClick={() => setEditMode((prev) => !prev)}
+            >
+              Edit
             </button>
             <button
               className={`p-2 px-1 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
-                viewCopyBtn ? `bg-green-200 hover:bg-green-300` : ""
+                CopyBtn ? `bg-green-200 hover:bg-green-300` : ""
               }`}
               onClick={() => {
                 copy(`${documentId}`);
-                setViewCopyBtn(true);
+                setCopyBtn(true);
                 setTimeout(() => {
-                  setViewCopyBtn(false);
+                  setCopyBtn(false);
                 }, 1000);
               }}
             >
-              {viewCopyBtn ? "Copied" : "View Link"}
+              {CopyBtn ? "Copied" : "Share ID"}
             </button>
           </div>
         </div>
       </div>
+      <div className="flex justify-center items-center gap-5 my-2 sm:hidden">
+        <button
+          className={`p-2 rounded-md bg-green-200 hover:bg-green-300 ${
+            viewMode ? `` : "bg-red-200 hover:bg-red-300"
+          }`}
+          onClick={() => setViewMode((prev) => !prev)}
+        >
+          View
+        </button>
+        <button
+          className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
+            editMode ? "" : `bg-red-200 hover:bg-red-300`
+          }`}
+          onClick={() => setEditMode((prev) => !prev)}
+        >
+          Edit
+        </button>
+        <button
+          className={`p-2 px-1 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
+            CopyBtn ? `bg-green-200 hover:bg-green-300` : ""
+          }`}
+          onClick={() => {
+            copy(`${documentId}`);
+            setCopyBtn(true);
+            setTimeout(() => {
+              setCopyBtn(false);
+            }, 1000);
+          }}
+        >
+          {CopyBtn ? "Copied" : "Share ID"}
+        </button>
+      </div>
 
       {/* Text Editor */}
-      <div>
+      <div className="md:flex justify-center items-center">
         <div className="container" ref={wrapperRef}></div>
       </div>
     </div>
