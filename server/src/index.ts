@@ -10,10 +10,10 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const corsOptions = {
-    origin: '*',
-    methods: ["GET", "POST"],
+    origin: '*', // For testing purposes, allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    credentials: true, // Only needed if you're sending cookies or credentials
 };
 
 const app = express();
