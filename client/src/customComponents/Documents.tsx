@@ -65,57 +65,60 @@ function Documents() {
       });
       setSocket(s);
       s.connect();
-      
-      s.on('disconnect',()=>{
-        console.log('Disconnected from server');
-      })
+
+      s.on("disconnect", () => {
+        console.log("Disconnected from server");
+      });
 
       return () => {
-        if(documentOwner == username){          
-          s.emit('close-document', documentId)
+        if (documentOwner == username) {
+          s.emit("close-document", documentId);
           //@ts-ignore
-          handleNotShareable(documentId)
+          handleNotShareable(documentId);
         }
         s.disconnect();
       };
     }
-  }, [username,documentOwner,documentId]);
+  }, [username, documentOwner, documentId]);
 
   // close-document useEffect
-  useEffect(()=>{
-    if(socket == null) return;
-  
-    const handler = ()=>{
-      window.alert('The document has been closed by the owner.');
+  useEffect(() => {
+    if (socket == null) return;
+
+    const handler = () => {
+      window.alert("The document has been closed by the owner.");
       socket.disconnect();
-      navigate('/');
-    }
-    socket.on('close-document',handler);
-    return ()=>{
-      socket.off('close-document',handler);
-    }
-  },[socket])
+      navigate("/");
+    };
+    socket.on("close-document", handler);
+    return () => {
+      socket.off("close-document", handler);
+    };
+  }, [socket]);
 
   // load-document useEffect
   useEffect(() => {
     if (socket == null || quill == null) return;
 
-    socket.once("load-document", (document, filename, editMode, documentOwner) => {
-      quill.setContents(document);
-      setFilename(filename);
-      setEditMode(editMode);
-      setDocumentOwner(documentOwner);
+    socket.once(
+      "load-document",
+      (document, filename, editMode, documentOwner) => {
+        quill.setContents(document);
+        setFilename(filename);
+        setEditMode(editMode);
+        setDocumentOwner(documentOwner);
 
-      if(documentOwner == username){
-        quill.enable();
-      }else{
-        if(editMode){
-          quill.enable()
-        }else{
-          quill.disable()
+        if (documentOwner == username) {
+          quill.enable();
+        } else {
+          if (editMode) {
+            quill.enable();
+          } else {
+            quill.disable();
+          }
         }
       }
-    });
+    );
 
     socket.emit("get-document", documentId);
   }, [socket, quill, documentId]);
@@ -184,6 +187,7 @@ function Documents() {
     if (socket == null) return;
 
     const handler = (editMode: boolean) => {
+      setEditMode(editMode);
       if (!editMode) {
         quill?.disable();
       } else {
@@ -191,12 +195,11 @@ function Documents() {
       }
     };
 
-    socket.emit("send-toggleEditMode");
     socket.on("load-toggleEditMode", handler);
     return () => {
       socket.off("load-toggleEditMode", handler);
     };
-  }, [socket, quill, editMode, documentId]);
+  }, [socket, quill]);
 
   const wrapperRef = useCallback((wrapper: HTMLDivElement | null) => {
     if (wrapper == null) return;
@@ -225,7 +228,7 @@ function Documents() {
             value={filename}
             maxLength={25}
             onChange={(e) => {
-              if(documentOwner == username){
+              if (documentOwner == username) {
                 setFilename(e.target.value);
               }
             }}
@@ -247,7 +250,10 @@ function Documents() {
                 className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
                   editMode ? "" : `bg-red-200 hover:bg-red-300`
                 }`}
-                onClick={() => setEditMode((prev) => !prev)}
+                onClick={() => {
+                  setEditMode((prev) => !prev)
+                  socket?.emit("send-toggleEditMode");
+                }}
               >
                 Edit
               </button>
@@ -276,7 +282,10 @@ function Documents() {
           className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
             editMode ? "" : `bg-red-200 hover:bg-red-300`
           }`}
-          onClick={() => setEditMode((prev) => !prev)}
+          onClick={() => {
+            setEditMode((prev) => !prev);
+            socket?.emit("send-toggleEditMode");
+          }}
         >
           Edit
         </button>
