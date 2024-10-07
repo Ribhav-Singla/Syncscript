@@ -92,6 +92,7 @@ function Homepage() {
             <div className="col-span-12 sm:col-span-6 join-box rounded flex flex-col justify-start px-4 py-3 sm:me-3">
               <p className="text-red-500">Features</p>
               <p>&bull; Real time text edior.</p>
+              <p className="text-blue-500">&bull; Unlock the document before sharing.</p>
               <p>&bull; Easily share documents with <strong>Id</strong>.</p>
               <p>&bull; Enhanced <strong>edit</strong> & <strong>share</strong> locks implemented!</p>
             </div>
