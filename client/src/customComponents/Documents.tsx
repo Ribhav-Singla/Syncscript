@@ -251,7 +251,7 @@ function Documents() {
                   editMode ? "" : `bg-red-200 hover:bg-red-300`
                 }`}
                 onClick={() => {
-                  setEditMode((prev) => !prev)
+                  setEditMode((prev) => !prev);
                   socket?.emit("send-toggleEditMode");
                 }}
               >
@@ -278,17 +278,21 @@ function Documents() {
         </div>
       </div>
       <div className="flex justify-center items-center gap-5 my-2 sm:hidden">
-        <button
-          className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
-            editMode ? "" : `bg-red-200 hover:bg-red-300`
-          }`}
-          onClick={() => {
-            setEditMode((prev) => !prev);
-            socket?.emit("send-toggleEditMode");
-          }}
-        >
-          Edit
-        </button>
+        {username == documentOwner ? (
+          <button
+            className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
+              editMode ? "" : `bg-red-200 hover:bg-red-300`
+            }`}
+            onClick={() => {
+              setEditMode((prev) => !prev);
+              socket?.emit("send-toggleEditMode");
+            }}
+          >
+            Edit
+          </button>
+        ) : (
+          ""
+        )}
         <button
           className={`p-2 px-1 rounded-md hover:bg-blue-300 w-20 bg-blue-200 ${
             CopyBtn ? `bg-green-200 hover:bg-green-300` : ""
