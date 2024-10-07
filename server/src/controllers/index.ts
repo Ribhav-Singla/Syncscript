@@ -90,7 +90,8 @@ export async function makeNotShareableDocument(req: Request, res: Response) {
         const document = await prisma.document.update({
             where: { documentId, userId: req.userId },
             data: {
-                shareable: false
+                shareable: false,
+                editMode : false
             }
         })
         res.status(200).json({ message: 'Document made not shareable' })
