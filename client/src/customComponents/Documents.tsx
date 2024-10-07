@@ -53,7 +53,7 @@ function Documents() {
   const [loading, setLoading] = useState(false);
   const [filename, setFilename] = useState("Untitled document");
   const [CopyBtn, setCopyBtn] = useState(false);
-  const [editMode, setEditMode] = useState(true);
+  const [editMode, setEditMode] = useState(false);
   const [documentOwner, setDocumentOwner] = useState("");
   const [onlineUsers, setOnlineUsers] = useState([]);
 
@@ -100,11 +100,21 @@ function Documents() {
   useEffect(() => {
     if (socket == null || quill == null) return;
 
-    socket.once("load-document", (document, filename, documentOwner) => {
+    socket.once("load-document", (document, filename, editMode, documentOwner) => {
       quill.setContents(document);
       setFilename(filename);
+      setEditMode(editMode);
       setDocumentOwner(documentOwner);
-      quill.enable();
+
+      if(documentOwner == username){
+        quill.enable();
+      }else{
+        if(editMode){
+          quill.enable()
+        }else{
+          quill.disable()
+        }
+      }
     });
 
     socket.emit("get-document", documentId);
@@ -181,7 +191,7 @@ function Documents() {
       }
     };
 
-    socket.emit("send-toggleEditMode", editMode);
+    socket.emit("send-toggleEditMode");
     socket.on("load-toggleEditMode", handler);
     return () => {
       socket.off("load-toggleEditMode", handler);
@@ -214,7 +224,11 @@ function Documents() {
             className="max-w-44"
             value={filename}
             maxLength={25}
-            onChange={(e) => setFilename(e.target.value)}
+            onChange={(e) => {
+              if(documentOwner == username){
+                setFilename(e.target.value);
+              }
+            }}
           />
           {loading ? <ColorRing height={"40"} /> : ""}
         </div>

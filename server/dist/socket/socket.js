@@ -49,7 +49,7 @@ function intializeSocket(server) {
             const document = yield findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
             socket.documentId = documentId;
-            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data, document === null || document === void 0 ? void 0 : document.filename, document === null || document === void 0 ? void 0 : document.user.username);
+            socket.emit('load-document', document === null || document === void 0 ? void 0 : document.data, document === null || document === void 0 ? void 0 : document.filename, document === null || document === void 0 ? void 0 : document.editMode, document === null || document === void 0 ? void 0 : document.user.username);
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta);
             });
@@ -64,9 +64,10 @@ function intializeSocket(server) {
                     }
                 });
             }));
-            socket.on('send-toggleEditMode', data => {
-                socket.broadcast.to(documentId).emit('load-toggleEditMode', data);
-            });
+            socket.on('send-toggleEditMode', () => __awaiter(this, void 0, void 0, function* () {
+                const updatedDocument = yield updateEditMode(documentId, socket.userId);
+                socket.broadcast.to(documentId).emit('load-toggleEditMode', updatedDocument === null || updatedDocument === void 0 ? void 0 : updatedDocument.editMode);
+            }));
             socket.on("close-document", (documentId) => {
                 socket.broadcast.to(documentId).emit("close-document");
             });
@@ -116,6 +117,36 @@ function findOrCreateDocument(documentId, userId) {
         }
         else {
             return document;
+        }
+    });
+}
+function updateEditMode(documentId, userId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (documentId == null)
+            return;
+        try {
+            const document = yield prisma.document.findUnique({
+                where: {
+                    documentId: documentId,
+                    userId: userId
+                }
+            });
+            if (!document) {
+                return;
+            }
+            const updatedDocument = yield prisma.document.update({
+                where: {
+                    documentId: documentId,
+                    userId: userId
+                },
+                data: {
+                    editMode: !document.editMode
+                }
+            });
+            return updatedDocument;
+        }
+        catch (error) {
+            console.log('error occured while updating editMode: ', error);
         }
     });
 }

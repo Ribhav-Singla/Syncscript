@@ -46,7 +46,7 @@ export default function intializeSocket(server: HttpServer) {
             const document = await findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
             socket.documentId = documentId;
-            socket.emit('load-document', document?.data, document?.filename, document?.user.username);
+            socket.emit('load-document', document?.data, document?.filename, document?.editMode ,document?.user.username);
 
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta)
@@ -64,8 +64,9 @@ export default function intializeSocket(server: HttpServer) {
                 })
             })
 
-            socket.on('send-toggleEditMode', data => {
-                socket.broadcast.to(documentId).emit('load-toggleEditMode', data)
+            socket.on('send-toggleEditMode', async() => {
+                const updatedDocument = await updateEditMode(documentId,socket.userId);
+                socket.broadcast.to(documentId).emit('load-toggleEditMode', updatedDocument?.editMode)
             })
 
             socket.on("close-document", (documentId:string) => {
@@ -117,5 +118,35 @@ async function findOrCreateDocument(documentId: string, userId: string) {
         })
     } else {
         return document
+    }
+}
+
+async function updateEditMode(documentId: string, userId: string) {
+    if (documentId == null) return
+    try {
+
+        const document = await prisma.document.findUnique({
+            where: {
+                documentId: documentId,
+                userId : userId
+            }
+        })
+
+        if(!document){
+            return
+        }
+
+        const updatedDocument = await prisma.document.update({
+            where: {
+                documentId: documentId,
+                userId : userId
+            },
+            data: {
+                editMode : !document.editMode
+            }
+        })
+        return updatedDocument
+    } catch (error) {
+        console.log('error occured while updating editMode: ',error);        
     }
 }
