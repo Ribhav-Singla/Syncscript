@@ -218,8 +218,8 @@ function Documents() {
   }, []);
 
   return (
-    <div>
-      <div className="online-users p-2 flex justify-between items-center bg-slate-50">
+    <div className="">
+      <div className="custom-tool-bar online-users p-2 flex justify-between items-center bg-slate-50">
         {/* filename input box */}
         <div className="max-w-60 flex justify-between items-center gap-2">
           <Input
@@ -277,7 +277,7 @@ function Documents() {
           </div>
         </div>
       </div>
-      <div className="flex justify-center items-center gap-5 my-2 sm:hidden">
+      <div className="custom-tool-bar flex justify-center items-center gap-5 my-2 sm:hidden">
         {username == documentOwner ? (
           <button
             className={`p-2 px-1 rounded-md hover:bg-green-300 w-20 bg-green-200 ${
