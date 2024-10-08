@@ -76,7 +76,7 @@ function Homepage() {
   };
 
   return (
-    <section className="border">
+    <section className="border mt-5">
       <main className="p-2 py-5">
         <div className="grid grid-cols-12 py-8 px-5">
           <div
