@@ -46,7 +46,7 @@ export default function intializeSocket(server: HttpServer) {
             const document = await findOrCreateDocument(documentId, socket.userId);
             socket.join(documentId);
             socket.documentId = documentId;
-            socket.emit('load-document', document?.data, document?.filename, document?.editMode ,document?.user.username);
+            socket.emit('load-document', document?.data, document?.filename, document?.editMode, document?.user.username);
 
             socket.on('send-changes', delta => {
                 socket.broadcast.to(documentId).emit('receive-changes', delta)
@@ -64,12 +64,12 @@ export default function intializeSocket(server: HttpServer) {
                 })
             })
 
-            socket.on('send-toggleEditMode', async() => {
-                const updatedDocument = await updateEditMode(documentId,socket.userId);
+            socket.on('send-toggleEditMode', async () => {
+                const updatedDocument = await updateEditMode(documentId, socket.userId);
                 socket.broadcast.to(documentId).emit('load-toggleEditMode', updatedDocument?.editMode)
             })
 
-            socket.on("close-document", (documentId:string) => {
+            socket.on("close-document", (documentId: string) => {
                 socket.broadcast.to(documentId).emit("close-document");
             });
 
@@ -128,25 +128,25 @@ async function updateEditMode(documentId: string, userId: string) {
         const document = await prisma.document.findUnique({
             where: {
                 documentId: documentId,
-                userId : userId
+                userId: userId
             }
         })
 
-        if(!document){
+        if (!document) {
             return
         }
 
         const updatedDocument = await prisma.document.update({
             where: {
                 documentId: documentId,
-                userId : userId
+                userId: userId
             },
             data: {
-                editMode : !document.editMode
+                editMode: !document.editMode
             }
         })
         return updatedDocument
     } catch (error) {
-        console.log('error occured while updating editMode: ',error);        
+        console.log('error occured while updating editMode: ', error);
     }
 }

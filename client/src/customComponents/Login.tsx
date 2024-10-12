@@ -67,7 +67,9 @@ function Login() {
             {loadingBtn ? "Submiting..." : "Submit"}
           </Button>
           <p className="text-blue-500 hover:text-blue-700 text-center mt-5 underline">
-            Reset password
+            <a href="/resetPassword">
+              Reset password
+            </a>
           </p>
         </div>
         <div className="mt-3">

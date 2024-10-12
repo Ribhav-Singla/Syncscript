@@ -5,6 +5,7 @@ import Register from "./customComponents/Register";
 import Documents from "./customComponents/Documents";
 import Navbar from "./customComponents/Navbar";
 import { Toaster } from "@/components/ui/toaster"
+import ResetPassword from "./customComponents/ResetPassword";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/documents/:id" element={<Documents />} />
         </Routes>
         <Toaster/>

@@ -1,6 +1,6 @@
 import express from 'express'
 import { Request, Response } from 'express'
-import { PrismaClient,Prisma } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { isLoggedIn } from '../middleware'
@@ -51,10 +51,38 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     }
 })
 
+authRouter.post('/resetPassword', async (req: Request, res: Response) => {
+    const { username, password } = req.body;
+    try {
+
+        const existing_user = await prisma.user.findFirst({ where: { username } })
+        if (existing_user){
+            const hashedPassword = bcrypt.hashSync(password, salt);
+            const user = await prisma.user.update({
+                where:{
+                    username
+                },
+                data: {
+                    password: hashedPassword
+                }
+            })
+            const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET as string)
+            res.status(200).json({ token })
+        }else{
+            res.status(401).json({ message: 'User not found!' })
+        }
+    } catch (error) {
+
+        console.log('Error occurred in authRouter /register:', error);
+        res.status(500).json({ message: 'Internal server error' });
+
+    }
+})
+
 authRouter.get('/me', isLoggedIn, async (req: Request, res: Response) => {
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId } })
-        res.status(200).json({ username : user?.username})
+        res.status(200).json({ username: user?.username })
     } catch (error) {
         console.log('Error occurred in authRouter /me:', error);
         res.status(500).json({ message: 'Internal server error' });

@@ -66,6 +66,32 @@ exports.authRouter.post('/register', (req, res) => __awaiter(void 0, void 0, voi
         }
     }
 }));
+exports.authRouter.post('/resetPassword', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    try {
+        const existing_user = yield prisma.user.findFirst({ where: { username } });
+        if (existing_user) {
+            const hashedPassword = bcryptjs_1.default.hashSync(password, salt);
+            const user = yield prisma.user.update({
+                where: {
+                    username
+                },
+                data: {
+                    password: hashedPassword
+                }
+            });
+            const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET);
+            res.status(200).json({ token });
+        }
+        else {
+            res.status(401).json({ message: 'User not found!' });
+        }
+    }
+    catch (error) {
+        console.log('Error occurred in authRouter /register:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
 exports.authRouter.get('/me', middleware_1.isLoggedIn, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield prisma.user.findUnique({ where: { id: req.userId } });
