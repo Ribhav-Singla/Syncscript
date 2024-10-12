@@ -52,7 +52,7 @@ function ResetPassword() {
     <>
       <div className="p-2">
         <h1 className="font-bold text-2xl border-b-2 border-black pb-2 pt-4">
-          Register
+          Reset Password
         </h1>
         <div className="max-w-80 border p-4 rounded mt-5">
           <div>
